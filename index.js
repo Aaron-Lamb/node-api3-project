@@ -1,11 +1,14 @@
 const express = require('express');
+const userRouter = require('./users/userRouter');
 const logger = require('./middleware/logger');
 
 const server = express();
-const port = 8080;
+const port = 4000;
 
 server.use(express.json());
 server.use(logger());
+
+server.use(userRouter);
 
 server.use((err, req, res, next) => {
     console.log(err);
