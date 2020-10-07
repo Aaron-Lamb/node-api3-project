@@ -1,20 +1,27 @@
 const express = require('express');
 const users = require('./userDb');
+const posts = require('../posts/postDb');
 
 const router = express.Router();
 
 router.post('/', validateUser(), (req, res, next) => {
   users.insert(req.body)
   .then(user => {
-    return res.status(204).json(user)
+    return res.status(201).json(user)
   })
   .catch(error => {
     next(error)
   })
 });
 
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
+router.post('/:id/posts', validateUserId(), validatePost(), (req, res, next) => {
+  posts.insert(req.body)
+  .then(post => {
+    return res.status(201).json(post)
+  })
+  .catch(error => {
+    next(error)
+  })
 });
 
 router.get('/', (req, res, next) => {
@@ -32,15 +39,35 @@ router.get('/:id', validateUserId(), (req, res) => {
   return res.status(200).json(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
-  // do your magic!
+router.get('/:id/posts', validateUserId(), (req, res, next) => {
+  users.getUserPosts(req.params.id)
+  .then(post => {
+    return res.status(200).json(post)
+  })
+  .catch(error => {
+    next(error)
+  })
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete('/:id', validateUserId(), (req, res, next) => {
+  users.remove(req.params.id)
+  .then(post => {
+    if(post > 0) {
+      return res.status(200).json({
+        message: "The user was deleted."
+      })
+    } else {
+      return res.status(404).json({
+        message: "There was an error deleting the user"
+      })
+    }
+  })
+  .catch(error => {
+    next(error)
+  })
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId(), validateUser(), (req, res) => {
   // do your magic!
 });
 
@@ -86,7 +113,23 @@ function validateUser() {
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  return (req, res, next) => {
+    if(!req.body) {
+     return res.status(400).json({
+        message: "missing post data"
+      })
+    } else if (!req.body.text) {
+     return res.status(400).json({
+        message: "missing text field"
+      })
+    } else if(!req.body.user_id){
+      return res.status(400).json({
+        message: "missing user id"
+      }) 
+    } else {
+      next()
+    }
+  }
 }
 
 module.exports = router;
