@@ -27,9 +27,7 @@ router.post('/:id/posts', validateUserId(), validatePost(), (req, res, next) => 
 router.get('/', (req, res, next) => {
   users.get()
   .then(user => {
-    return res.status(200).json(user, {
-      message: 'Testing'
-    })
+    return res.status(200).json(user)
   })
   .catch(error => {
     console.log(error)
